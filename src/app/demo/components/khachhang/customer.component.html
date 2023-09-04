@@ -1,5 +1,5 @@
 <p-toast></p-toast>
-<div class="card">
+<div >
     <p-table [value]="customerList"
              styleClass="p-datatable-gridlines p-datatable-striped"
              [tableStyle]="{ 'min-width': '50rem' }"
@@ -12,7 +12,7 @@
                 <h5 class="m-0">Danh sách khách hàng</h5>
                 <div class="flex md:align-items-center md:justify-content-between">
                     <button pButton pRipple (click)="addNewDialog()"
-                            label="Thêm"
+                            label="Thêm khách hàng"
                             icon="pi pi-plus"
                             class="p-button-success mr-2">
                     </button>
@@ -115,17 +115,19 @@
                 </div>
                 <div class="col-12 md:col-2 font-medium text-blue-500">Tài khoản iTax:</div>
                 <div #itax (click)="copyText(itax.innerText)" class="col-12 md:col-2 font-medium cursor-pointer">
-<!--                    <p-chip [label]="selectedCustomer.taxAccount"></p-chip>-->
+                    <!--                    <p-chip [label]="selectedCustomer.taxAccount"></p-chip>-->
                     {{selectedCustomer.taxAccount}}
                 </div>
                 <div class="col-12 md:col-2 font-medium text-blue-500">Password:</div>
-                <div #itaxPass (click)="copyText(itaxPass.innerText)" class="col-12 md:col-2 font-medium cursor-pointer">
-<!--                    <p-chip icon="pi pi-key" [label]="selectedCustomer.taxAccountPassword"></p-chip>-->
+                <div #itaxPass (click)="copyText(itaxPass.innerText)"
+                     class="col-12 md:col-2 font-medium cursor-pointer">
+                    <!--                    <p-chip icon="pi pi-key" [label]="selectedCustomer.taxAccountPassword"></p-chip>-->
                     {{selectedCustomer.taxAccountPassword}}
                 </div>
-                <div  class="col-12 md:col-2 font-medium text-blue-500">Token Pin:</div>
-                <div #tokenPin (click)="copyText(tokenPin.innerText)" class="col-12 md:col-2 font-medium cursor-pointer">
-<!--                    <p-chip icon="pi pi-key" [label]="selectedCustomer.tokenPin"></p-chip>-->
+                <div class="col-12 md:col-2 font-medium text-blue-500">Token Pin:</div>
+                <div #tokenPin (click)="copyText(tokenPin.innerText)"
+                     class="col-12 md:col-2 font-medium cursor-pointer">
+                    <!--                    <p-chip icon="pi pi-key" [label]="selectedCustomer.tokenPin"></p-chip>-->
                     {{selectedCustomer.tokenPin}}
                 </div>
 
@@ -309,7 +311,8 @@
                         </div>
                         <div class="field col-12 md:col-4">
                             <label for="invoiceAccountPassword">Mật khẩu</label>
-                            <input pInputText id="invoiceAccountPassword" formControlName="invoiceAccountPassword" type="text"/>
+                            <input pInputText id="invoiceAccountPassword" formControlName="invoiceAccountPassword"
+                                   type="text"/>
                         </div>
                     </div>
                 </div>
@@ -318,8 +321,10 @@
                     <div class="formgrid grid">
                         <div class="field col-12 md:col-12">
                             <label for="description">Ghi chú</label>
-                            <textarea pInputTextarea rows="5" id="description"
-                            formControlName="description" ></textarea>
+                            <p-editor id="description"
+                                      [style]="{ height: '320px' }"
+                                      formControlName="description">
+                            </p-editor>
                         </div>
                     </div>
                 </div>

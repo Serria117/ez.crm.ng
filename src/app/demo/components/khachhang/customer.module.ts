@@ -20,6 +20,7 @@ import {ChipsModule} from "primeng/chips";
 import {SplitButtonModule} from "primeng/splitbutton";
 import {PaginatorModule} from "primeng/paginator";
 import {DividerModule} from "primeng/divider";
+import {EditorModule} from "primeng/editor";
 
 
 @NgModule({
@@ -44,7 +45,8 @@ import {DividerModule} from "primeng/divider";
         ChipsModule,
         SplitButtonModule,
         PaginatorModule,
-        DividerModule
+        DividerModule,
+        EditorModule
     ],
     providers: [CustomerService,]
 })

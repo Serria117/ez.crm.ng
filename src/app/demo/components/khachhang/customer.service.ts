@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
-import {Customer} from "../../api/customer";
+import {Customer, CustomerInput} from "../../api/customer";
 import {API} from "../../api/baseApi";
 
 @Injectable()
@@ -16,13 +16,14 @@ export class CustomerService {
         return this.httpClient.get(this.BASE_URL + API.Customer.getAll,
             {
                 params: {
-                    page: page,
-                    size: size
-                }
+                    Page: page,
+                    Size: size
+                },
+                withCredentials: true
             });
     }
 
-    create(customer: Customer): Observable<any> {
+    create(customer: CustomerInput): Observable<any> {
         return this.httpClient.post(this.BASE_URL + API.Customer.create, customer)
     }
 
@@ -30,7 +31,7 @@ export class CustomerService {
         return this.httpClient.get(this.BASE_URL + API.Customer.findById + taxCode);
     }
 
-    update(customer: Customer): Observable<any> {
+    update(customer: CustomerInput): Observable<any> {
         return this.httpClient.post(this.BASE_URL + API.Customer.update, customer)
     }
 
@@ -38,9 +39,9 @@ export class CustomerService {
         return this.httpClient.get(this.BASE_URL + API.Customer.search,
             {
                 params: {
-                    keyword: keyword,
-                    page: page,
-                    size: size
+                    Keyword: keyword,
+                    Page: page,
+                    Size: size
                 }
             });
     }

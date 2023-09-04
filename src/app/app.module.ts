@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import {HashLocationStrategy, LocationStrategy, NgForOf, NgIf} from '@angular/common';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppLayoutModule } from './layout/app.layout.module';
@@ -14,19 +14,24 @@ import { CustomerComponent } from './demo/components/khachhang/customer.componen
 import {CustomerService} from "./demo/components/khachhang/customer.service";
 import {CustomerModule} from "./demo/components/khachhang/customer.module";
 import {MessageService} from "primeng/api";
+import { ReadInvoiceComponent } from './demo/components/read-invoice/read-invoice.component';
+import {FileUploadModule} from "primeng/fileupload";
+import {ToastModule} from "primeng/toast";
+import {TableModule} from "primeng/table";
+import {AuthInterceptorProviders} from "./helper/auth.interceptor";
 
 @NgModule({
     declarations: [
-        AppComponent, NotfoundComponent
+        AppComponent, NotfoundComponent, ReadInvoiceComponent
     ],
     imports: [
         AppRoutingModule, CustomerModule,
-        AppLayoutModule
+        AppLayoutModule, FileUploadModule, ToastModule, NgIf, NgForOf, TableModule
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },
         CountryService, EventService, IconService, NodeService,
-        PhotoService, ProductService, MessageService
+        PhotoService, ProductService, MessageService, AuthInterceptorProviders
     ],
     bootstrap: [AppComponent]
 })

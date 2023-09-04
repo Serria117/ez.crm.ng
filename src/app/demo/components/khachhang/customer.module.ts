@@ -15,6 +15,11 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {KeyFilterModule} from "primeng/keyfilter";
 import {ToastModule} from "primeng/toast";
 import {CheckboxModule} from "primeng/checkbox";
+import {ChipModule} from "primeng/chip";
+import {ChipsModule} from "primeng/chips";
+import {SplitButtonModule} from "primeng/splitbutton";
+import {PaginatorModule} from "primeng/paginator";
+import {DividerModule} from "primeng/divider";
 
 
 @NgModule({
@@ -34,7 +39,12 @@ import {CheckboxModule} from "primeng/checkbox";
         KeyFilterModule,
         ReactiveFormsModule,
         ToastModule,
-        CheckboxModule
+        CheckboxModule,
+        ChipModule,
+        ChipsModule,
+        SplitButtonModule,
+        PaginatorModule,
+        DividerModule
     ],
     providers: [CustomerService,]
 })

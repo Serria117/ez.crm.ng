@@ -1,13 +1,17 @@
 export const API = {
-    BASE : `http://localhost:5056/api/`,
+    BASE : `https://localhost:44311`,
+
+    AUTH: {
+        login: `/api/TokenAuth/Authenticate`
+    },
 
     Customer : {
-        getAll: `customer/get-all`,
-        create: `customer/create`,
-        update: `customer/update`,
-        findById: `customer/`,
-        search: `customer/search`,
-        check: `customer/check-taxCode`,
+        getAll: `/api/services/app/Customer/GetAllCustomer`,
+        create: `/api/services/app/Customer/CreateCustomer`,
+        update: `/api/services/app/Customer/UpdateCustomer`,
+        findById: `/api/services/app/Customer/GetCustomerByTaxCode`,
+        search: `/api/services/app/Customer/Search`,
+        check: `/api/services/app/Customer/CheckTaxCodeDuplication`,
         validate: `customer/validate-taxCode`
     }
 }

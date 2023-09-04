@@ -22,6 +22,12 @@ export class AppMenuComponent implements OnInit {
                 ]
             },
             {
+                label: 'Công cụ',
+                items: [
+                    {label: 'Đọc hóa đơn XML', icon: 'pi pi-fw pi-id-card', routerLink: ['/hoa-don']}
+                ]
+            },
+            /*{
                 label: 'UI Components',
                 items: [
                     { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'] },
@@ -160,7 +166,7 @@ export class AppMenuComponent implements OnInit {
                         label: 'View Source', icon: 'pi pi-fw pi-search', url: ['https://github.com/primefaces/sakai-ng'], target: '_blank'
                     }
                 ]
-            }
+            }*/
         ];
     }
 }

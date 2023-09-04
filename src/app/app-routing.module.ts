@@ -3,6 +3,8 @@ import {NgModule} from '@angular/core';
 import {NotfoundComponent} from './demo/components/notfound/notfound.component';
 import {AppLayoutComponent} from "./layout/app.layout.component";
 import {CustomerComponent} from "./demo/components/khachhang/customer.component";
+import {ReadInvoiceComponent} from "./demo/components/read-invoice/read-invoice.component";
+import {AuthGuard} from "./demo/components/auth/auth-guard.service";
 
 @NgModule({
     imports: [
@@ -12,11 +14,17 @@ import {CustomerComponent} from "./demo/components/khachhang/customer.component"
                 children: [
                     {
                         path: '',
-                        loadChildren: () => import('./demo/components/dashboard/dashboard.module').then(m => m.DashboardModule)
+                        loadChildren: () => import('./demo/components/dashboard/dashboard.module').then(m => m.DashboardModule),
+                        canActivate: [AuthGuard]
                     },
                     {
                         path: 'khach-hang',
-                        component: CustomerComponent
+                        component: CustomerComponent,
+                        canActivate: [AuthGuard]
+                    },
+                    {
+                        path: 'hoa-don',
+                        component: ReadInvoiceComponent
                     },
                     {
                         path: 'uikit',

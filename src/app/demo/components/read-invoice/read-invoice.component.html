@@ -1,0 +1,44 @@
+<div class="card flex justify-content-center">
+    <p-toast></p-toast>
+    <p-fileUpload name="demo[]"
+                  url="https://www.primefaces.org/cdn/api/upload.php"
+                  (onUpload)="onUpload($event)"
+
+                  [multiple]="true" maxFileSize="1000000">
+        <ng-template pTemplate="content">
+            <ul *ngIf="uploadedFiles.length">
+                <li *ngFor="let file of uploadedFiles">{{ file.name }} - {{ file.size }} bytes</li>
+            </ul>
+        </ng-template>
+    </p-fileUpload>
+</div>
+<div class="card justify-content-center">
+    <p-table [value]="invoiceList"
+             styleClass="p-datatable-gridlines p-datatable-striped"
+             [tableStyle]="{ 'min-width': '50rem' }"
+             [selectionMode]="'single'"
+    >
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Số hóa đơn</th>
+                <th>Bên bán</th>
+                <th>Mã số thuế</th>
+                <th>Tên hàng hóa dịch vụ</th>
+                <th>Tổng tiền trước thuế</th>
+                <th>Tiền thuế</th>
+                <th>Tổng tiền sau thuế</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-inv>
+            <tr>
+                <td class="text-right">{{inv.SHDon}}</td>
+                <td>{{inv.NBan}}</td>
+                <td>{{inv.MSTNBan}}</td>
+                <td></td>
+                <td class="text-right">{{inv.TongSThue}}</td>
+                <td class="text-right">{{inv.TienThue}}</td>
+                <td class="text-right">{{inv.TongSThue}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

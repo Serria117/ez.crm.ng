@@ -1,15 +1,15 @@
 import {Component, OnInit} from '@angular/core';
 import {CustomerService} from "./customer.service";
-import {Customer} from "../../api/customer";
+import {Customer, CustomerInput} from "../../api/customer";
 import {CommonService} from "../../../common/common.service";
 import {TableModule} from 'primeng/table';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
-import {MessageService} from "primeng/api";
-import {b} from "@fullcalendar/core/internal-common";
-import {EditorModule} from 'primeng/editor';
+import {MenuItem, MessageService} from "primeng/api";
 import {CustomValidatorService} from "../../../common/custom-validator.service";
 import {error} from "@angular/compiler-cli/src/transformers/util";
 import {map} from "rxjs/operators";
+import {Clipboard} from "@angular/cdk/clipboard";
+import {el} from "@fullcalendar/core/internal-common";
 
 @Component({
     selector: 'app-khachhang',
@@ -23,13 +23,15 @@ export class CustomerComponent implements OnInit {
     constructor(private customerService: CustomerService,
                 private commonService: CommonService,
                 private messageService: MessageService,
-                private customValidator: CustomValidatorService) {
+                private customValidator: CustomValidatorService,
+                private clipboard: Clipboard) {
     }
 
-    customerList: Customer[];
+    public customerList: CustomerInput[];
+    public selectedCustomer: CustomerInput = {};
     country: any[];
     page: number = 1;
-    size: number = 10;
+    size: number = 100;
 
     loading: boolean = true;
     isUpdate: boolean = false;
@@ -37,9 +39,27 @@ export class CustomerComponent implements OnInit {
     isFormValid: boolean = true;
     inputDialog: boolean = false;
     inputDialogHeader: string = null;
+    detailDialog: boolean = false;
     taxCodeReGex: RegExp = /^[0-9-]+$/;
+    address2: boolean = false;
 
     customerForm: FormGroup;
+
+    detailButton: MenuItem[] = [
+        {
+            label: 'Sửa thông tin',
+            icon: 'pi pi-cog',
+            command: () => {
+                this.updateDialog();
+            }
+        },
+        {
+            label: 'Xóa',
+            icon: 'pi pi-trash',
+            command: () => {
+            }
+        },
+    ]
 
     ngOnInit(): void {
         this.initForm();
@@ -49,21 +69,25 @@ export class CustomerComponent implements OnInit {
     initForm(): void {
         this.customerForm = new FormGroup({
             taxCode: new FormControl(null,
-                [Validators.required,
-                    this.customValidator.taxCodeValid(),
-                ]),
+                [Validators.required, this.customValidator.taxCodeValid(),]),
             fullName: new FormControl(null, [Validators.required]),
-            shortName: new FormControl(null,
-                [Validators.required,
-                    Validators.maxLength(20)]),
-            address: new FormControl(null),
-            email: new FormControl(null, [Validators.email]),
-            phone: new FormControl(null, [Validators.pattern(/^[0-9]{8-12}$/)]),
+            shortName: new FormControl(null, [Validators.required, Validators.maxLength(20)]),
+            address: new FormControl(null, [Validators.required]),
+            address2: new FormControl(null),
+            customerEmails: new FormControl(null),
+            managerPhone: new FormControl(null, [Validators.pattern(/^\+?[0-9]{8,12}$/)]),
+            accountantPhone: new FormControl(null, [Validators.pattern(/^\+?[0-9]{8,12}$/)]),
             taxAccount: new FormControl(null),
             taxAccountPassword: new FormControl(null),
+            tokenPin: new FormControl(null),
+            taxInvoiceAccount: new FormControl(null),
+            taxInvoiceAccountPassword: new FormControl(null),
             invoiceProvider: new FormControl(null),
             invoiceAccount: new FormControl(null),
-            invoiceAccountPassword: new FormControl(null)
+            invoiceAccountPassword: new FormControl(null),
+            managerName: new FormControl(null, [Validators.required]),
+            accountantName: new FormControl(null),
+            description: new FormControl(null, [Validators.maxLength(2000)])
         });
     }
 
@@ -73,7 +97,7 @@ export class CustomerComponent implements OnInit {
             this.customerService.checkDuplicate(this.customerForm.get('taxCode').value)
                 .subscribe({
                     next: res => {
-                        if (res === true) {
+                        if (res === true && this.isUpdate === false) {
                             this.customerForm.get('taxCode').setErrors({dupTaxCode: "Mã số thuế đã tồn tại"})
                         } else {
                             if (this.customerForm.get('taxCode').hasError('dupTaxCode')) {
@@ -81,13 +105,54 @@ export class CustomerComponent implements OnInit {
                                 this.customerForm.get('taxCode').updateValueAndValidity();
                             }
                         }
-
                     }
                 });
     }
 
+    checkEmail() {
+        let emails = this.customerForm.get('customerEmails').value;
+        let pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emails !== null) {
+            emails.forEach((email: string) => {
+                if (!pattern.test(email)) {
+                    this.customerForm.get('customerEmails').setErrors({invalidEmail: "Email không hợp lệ"});
+                } else {
+                    if (this.customerForm.get('customerEmails').hasError('invalidEmail')) {
+                        delete this.customerForm.get('customerEmails').errors['invalidEmail'];
+                        this.customerForm.get('customerEmails').updateValueAndValidity();
+                    }
+                }
+            });
+        }
+
+    }
+
+    copyText(text: string) {
+        if (text !== null && text !== '') {
+            this.clipboard.copy(text);
+            this.messageService.add({
+                key: 'mess',
+                severity: 'success',
+                summary: 'Copied!',
+                detail: text,
+                life: 1000
+            });
+        } else {
+            this.messageService.add({
+                key: 'mess',
+                severity: 'info',
+                summary: 'Oops!',
+                detail: 'Nothing to copy!',
+                life: 1000
+            })
+        }
+
+    }
+
     handleSubmit(): void {
         this.customerForm.markAllAsTouched();
+        //console.log(this.customerForm.value);
+        console.log(this.customerForm.errors);
         if (this.customerForm.invalid) {
             this.messageService.add({
                 key: 'mess',
@@ -97,15 +162,13 @@ export class CustomerComponent implements OnInit {
                 life: 5000
             });
         } else {
-            let inputCustomer: Customer = {...this.customerForm.value}
+            let inputCustomer: CustomerInput = {...this.customerForm.value}
             if (this.isUpdate === false) {
                 this.createCustomer(inputCustomer);
             } else {
-
+                inputCustomer.id = this.selectedCustomer.id;
+                this.updateCustomer(inputCustomer);
             }
-        }
-        if (this.isSucceed) {
-            this.closeDialog();
         }
     }
 
@@ -116,7 +179,8 @@ export class CustomerComponent implements OnInit {
     }
 
     updateDialog(): void {
-        this.inputDialogHeader = 'Cập nhật thông tin khách hàng';
+        this.customerForm.patchValue(this.selectedCustomer);
+        this.inputDialogHeader = `Cập nhật thông tin khách hàng: ${this.selectedCustomer.taxCode || ''}`;
         this.isUpdate = true;
         this.inputDialog = true;
     }
@@ -129,11 +193,49 @@ export class CustomerComponent implements OnInit {
         this.customerForm.reset();
     }
 
+    changeAddress(): void {
+        if (this.customerForm.get('address').value !== null
+            && this.customerForm.get('address').value !== ''
+            && this.address2 === true) {
+            this.customerForm.get('address2').setValue(this.customerForm.get('address').value);
+        } else {
+            this.customerForm.get('address2').setValue(null);
+        }
+    }
+
+    checkedAddress() {
+        this.address2 = !this.address2;
+        if (this.address2 === true) {
+            this.customerForm.get('address2').setValue(this.customerForm.get('address').value);
+            this.customerForm.get('address2').disable();
+        } else {
+            this.customerForm.get('address2').setValue(null);
+            this.customerForm.get('address2').enable();
+        }
+    }
+
+    iTaxAccount() {
+        let taxCode = this.customerForm.get('taxCode').value
+        console.log(taxCode)
+        if (taxCode !== null && taxCode !== '')
+            this.customerForm.get('taxAccount').setValue(taxCode + '-QL');
+    }
+
+    selectCustomer(customer: any): void {
+        this.selectedCustomer = {...customer};
+    }
+
+    viewCustomer(customer: any): void {
+        this.selectCustomer(customer);
+        this.detailDialog = true;
+        //TODO call dialog to view customer (no change data)
+    }
+
     loadCustomer(page: number, size: number): void {
         this.customerService.getAll(page, size).subscribe({
             next: res => {
-                if (res.items !== undefined) {
-                    this.customerList = res.items;
+                if (res.result !== undefined) {
+                    this.customerList = res.result.items;
                 }
             },
             error: err => {
@@ -142,7 +244,7 @@ export class CustomerComponent implements OnInit {
         })
     }
 
-    createCustomer(customer: Customer): void {
+    createCustomer(customer: CustomerInput): void {
         this.customerService.create(customer).subscribe({
             next: res => {
                 if (res) {
@@ -154,16 +256,47 @@ export class CustomerComponent implements OnInit {
                         life: 5000
                     });
                     this.isSucceed = true;
+                    this.loadCustomer(this.page, this.size);
+                    this.closeDialog();
                 }
             },
             error: () => {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Cảnh báo',
-                    detail: 'Có lỗi xảy ra, vui lòng kiểm tra lại cái trường thông tin.'
+                    detail: 'Có lỗi xảy ra, vui lòng kiểm tra lại các trường thông tin.'
                 })
             }
         });
+    }
+
+    updateCustomer(customer: CustomerInput): void {
+        //TODO call update customer API
+        console.log({update: customer})
+        this.customerService.update(customer).subscribe(
+            {
+                next: res => {
+                    if (res.success) {
+                        this.messageService.add({
+                            severity: 'info',
+                            summary: 'Thông báo',
+                            detail: `Cập nhật thành công khách hàng: ${customer.taxCode}`,
+                            life: 5000
+                        });
+                        this.isSucceed = true;
+                        this.loadCustomer(this.page, this.size);
+                        this.closeDialog();
+                    }
+                },
+                error: () => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Server error',
+                        detail: 'Có lỗi xảy ra.'
+                    })
+                }
+            }
+        )
     }
 
 }

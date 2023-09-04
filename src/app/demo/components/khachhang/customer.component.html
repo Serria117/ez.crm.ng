@@ -1,54 +1,143 @@
-<p-toolbar styleClass="mb-4">
-    <ng-template pTemplate="left">
-        <div class="my-2">
-            <button pButton pRipple (click)="addNewDialog()"
-                    label="Thêm"
-                    icon="pi pi-plus"
-                    class="p-button-success mr-2"></button>
-        </div>
-    </ng-template>
-
-</p-toolbar>
 <p-toast></p-toast>
 <div class="card">
     <p-table [value]="customerList"
-             styleClass="p-datatable-gridlines"
+             styleClass="p-datatable-gridlines p-datatable-striped"
              [tableStyle]="{ 'min-width': '50rem' }"
              [selectionMode]="'single'"
+             [scrollable]="true" scrollHeight="500px"
     >
         <ng-template pTemplate="caption">
             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+
                 <h5 class="m-0">Danh sách khách hàng</h5>
-                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                <div class="flex md:align-items-center md:justify-content-between">
+                    <button pButton pRipple (click)="addNewDialog()"
+                            label="Thêm"
+                            icon="pi pi-plus"
+                            class="p-button-success mr-2">
+                    </button>
+                    <span class="block mt-2 md:mt-0 p-input-icon-left">
                     <i class="pi pi-search"></i>
                     <input pInputText type="text"
                            placeholder="Search..." class="w-full sm:w-auto"
                     />
                 </span>
+                </div>
+
             </div>
         </ng-template>
         <ng-template pTemplate="header">
             <tr>
+                <th>Action</th>
                 <th>Mã số thuế</th>
                 <th>Tên khách hàng</th>
                 <th>Tên viết tắt</th>
-                <th>Địa chỉ</th>
+                <th>Email</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-c>
             <tr>
+                <td>
+                    <p-splitButton label="Xem" styleClass="p-button-sm"
+                                   icon="pi pi-eye" pRipple appendTo="body"
+                                   (onClick)="viewCustomer(c)" (onDropdownClick)="selectCustomer(c)"
+                                   [model]="detailButton">
+                    </p-splitButton>
+                </td>
                 <td>{{ c.taxCode }}</td>
                 <td>{{ c.fullName }}</td>
                 <td>{{ c.shortName }}</td>
-                <td>{{ c.address }}</td>
+                <td>
+                    <div class="flex align-items-center gap-2 flex-wrap"
+                         *ngFor="let e of c.customerEmails">
+                        <p-chip [label]="e" icon="pi pi-envelope" class="md:m-1">
+                        </p-chip>
+                    </div>
+                </td>
             </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-center">
+
+                <p-paginator
+                    [rowsPerPageOptions]="[10, 20, 30]">
+                </p-paginator>
+            </div>
         </ng-template>
     </p-table>
 
+    <p-dialog [(visible)]="detailDialog"
+              [style]="{width: '1000px'}"
+              [header]="selectedCustomer.fullName +' - ' + selectedCustomer.taxCode"
+              maximizable="true"
+              [modal]="true" class="p-fluid">
+        <div class="card align-items-center">
+            <div class="grid">
+                <div class="col-12 md:col-2 font-medium text-blue-500">Mã số thuế:</div>
+                <div class="col-12 md:col-10 font-medium1">{{selectedCustomer.taxCode}}</div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Tên đầy đủ:</div>
+                <div class="col-12 md:col-6 font-medium">{{selectedCustomer.fullName}}</div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Tên viết tắt:</div>
+                <div class="col-12 md:col-2 font-medium">{{selectedCustomer.shortName}}</div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Trụ sở:</div>
+                <div class="col-12 md:col-4 font-medium">{{selectedCustomer.address}}</div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Nơi nhận thông báo:</div>
+                <div class="col-12 md:col-4 font-medium">{{selectedCustomer.address}}</div>
+                <div class="col-12">
+                    <p-divider align="left">
+                        <div class="inline-flex align-items-center">
+                            <i class="pi pi-user mr-2"></i>
+                            <b>Thông tin liên hệ</b>
+                        </div>
+                    </p-divider>
+                </div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Người đại diện:</div>
+                <div class="col-12 md:col-4 font-medium">{{selectedCustomer.managerName}}</div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Điện thoại:</div>
+                <div class="col-12 md:col-4 font-medium">{{selectedCustomer.managerPhone}}</div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Kế toán:</div>
+                <div class="col-12 md:col-4 font-medium">{{selectedCustomer.accountantName}}</div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Điện thoại:</div>
+                <div class="col-12 md:col-4 font-medium">{{selectedCustomer.accountantPhone}}</div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Email:</div>
+                <div class="col-12 md:col-10 font-medium">
+                    <span *ngFor="let e of selectedCustomer.customerEmails">
+                        <p-chip [label]="e" icon="pi pi-envelope" class="md:m-1"></p-chip>
+                    </span>
+                </div>
+                <div class="col-12">
+                    <p-divider align="left">
+                        <div class="inline-flex align-items-center">
+                            <i class="pi pi-cog mr-2"></i>
+                            <b>Tài khoản tra cứu thông tin</b>
+                        </div>
+                    </p-divider>
+                </div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Tài khoản iTax:</div>
+                <div #itax (click)="copyText(itax.innerText)" class="col-12 md:col-2 font-medium cursor-pointer">
+<!--                    <p-chip [label]="selectedCustomer.taxAccount"></p-chip>-->
+                    {{selectedCustomer.taxAccount}}
+                </div>
+                <div class="col-12 md:col-2 font-medium text-blue-500">Password:</div>
+                <div #itaxPass (click)="copyText(itaxPass.innerText)" class="col-12 md:col-2 font-medium cursor-pointer">
+<!--                    <p-chip icon="pi pi-key" [label]="selectedCustomer.taxAccountPassword"></p-chip>-->
+                    {{selectedCustomer.taxAccountPassword}}
+                </div>
+                <div  class="col-12 md:col-2 font-medium text-blue-500">Token Pin:</div>
+                <div #tokenPin (click)="copyText(tokenPin.innerText)" class="col-12 md:col-2 font-medium cursor-pointer">
+<!--                    <p-chip icon="pi pi-key" [label]="selectedCustomer.tokenPin"></p-chip>-->
+                    {{selectedCustomer.tokenPin}}
+                </div>
+
+            </div>
+        </div>
+    </p-dialog>
+
     <p-dialog [(visible)]="inputDialog"
-              [style]="{width: '1200px'}"
+              [style]="{width: '1300px'}"
               (onHide)="clearForm()"
               [header]="inputDialogHeader"
+              maximizable="true"
               [modal]="true" class="p-fluid">
         <div class="col-12">
             <form [formGroup]="customerForm">
@@ -58,7 +147,6 @@
                         <div class="field col-12 md:col-3">
                             <label for="taxCode">Mã số thuế <span style="color: red">*</span></label>
                             <input pInputText id="taxCode" type="text" (blur)="checkDuplicateTaxCode()"
-                                   [pKeyFilter]="taxCodeReGex"
                                    formControlName="taxCode"
                                    [ngClass]="{'ng-invalid ng-dirty':(customerForm.get('taxCode').invalid) && (customerForm.get('taxCode').touched || customerForm.get('taxCode').dirty)}"
                             />
@@ -101,74 +189,127 @@
                             <div
                                 *ngIf="customerForm.get('shortName').invalid && (customerForm.get('shortName').touched || customerForm.get('shortName').dirty)">
                                 <small class="p-error" *ngIf="customerForm.get('shortName').errors.required">
-                                    Tên viêt tắt không được để trống
+                                    Tên viết tắt không được để trống
                                 </small>
                             </div>
                         </div>
-                            <div class="field col-12 md:col-5">
-                                <label for="address">Địa chỉ trụ sở</label>
-                                <input pInputText id="address"
-                                       formControlName="address"
-                                />
-                            </div>
-                            <div class="field col-12 md:col-4">
-                                <label for="address">Địa chỉ nhận thông báo</label>
-                                <input pInputText id="address2"
-                                       formControlName="address2"
-                                />
-                            </div>
-                            <div class="field-checkbox col-12 md:col-3 flex align-items-center">
-                                <p-checkbox formControlName="city"
-                                            value="New York"
-                                            label="Nhận thông báo tại trụ sở?"
-                                            inputId="check">
-                                </p-checkbox>
-                            </div>
                         <div class="field col-12 md:col-6">
+                            <label for="address">Địa chỉ trụ sở <span style="color: red">*</span></label>
+                            <input pInputText id="address"
+                                   formControlName="address"
+                                   (input)="changeAddress()"
+                                   [ngClass]="{'ng-invalid ng-dirty':customerForm.get('address').invalid && (customerForm.get('address').touched || customerForm.get('address').dirty)}"
+                            />
+                            <div
+                                *ngIf="customerForm.get('address').invalid && (customerForm.get('address').touched || customerForm.get('address').dirty)">
+                                <small class="p-error" *ngIf="customerForm.get('address').errors.required">
+                                    Địa chỉ không được để trống
+                                </small>
+                            </div>
+                        </div>
+                        <div class="field col-12 md:col-6">
+                            <label for="address">Địa chỉ nhận thông báo</label>
+                            <input pInputText id="address2"
+                                   formControlName="address2"
+                            />
+                        </div>
+                        <div class="field-checkbox col-12 md:col-12 flex align-items-center">
+                            <p-checkbox
+                                [value]="address2"
+                                [binary]="true"
+                                label="Nhận thông báo tại trụ sở?"
+                                (onChange)="checkedAddress()"
+                                inputId="check">
+                            </p-checkbox>
+                        </div>
+                        <div class="field col-12 md:col-12">
                             <label for="email">Email</label>
-                            <input pInputText type="email" id="email"/>
+                            <p-chips id="email"
+                                     formControlName="customerEmails"
+                                     separator="," [addOnTab]="true" [addOnBlur]="true" [showClear]="true"
+                                     [allowDuplicate]="false"
+                                     placeholder="name1@email.com, name2@email.com"
+                                     (onBlur)="checkEmail()"/>
+                            <div
+                                *ngIf="customerForm.get('customerEmails').invalid && (customerForm.get('customerEmails').touched || customerForm.get('customerEmails').dirty)">
+                                <small class="p-error" *ngIf="customerForm.get('customerEmails').errors.invalidEmail">
+                                    Địa chỉ email không hợp lệ
+                                </small>
+                            </div>
                         </div>
                         <div class="field col-12 md:col-6">
-                            <label for="address">Phone</label>
-                            <input pInputText type="email" id="phone"/>
+                            <label for="managerName">Người đại diện</label>
+                            <input pInputText id="managerName" type="text"
+                                   formControlName="managerName"/>
                         </div>
                         <div class="field col-12 md:col-6">
-                            <label for="representative">Tên người đại diện</label>
-                            <input pInputText id="representative" type="text"/>
+                            <label for="managerPhone">Điện thoại người đại diện</label>
+                            <input pInputText type="text" id="managerPhone"
+                                   formControlName="managerPhone"/>
+                            <div
+                                *ngIf="customerForm.get('managerPhone').invalid && (customerForm.get('managerPhone').touched || customerForm.get('managerPhone').dirty)">
+                                <small class="p-error" *ngIf="customerForm.get('managerPhone').errors.pattern">
+                                    Số điện thoại không hợp lệ
+                                </small>
+                            </div>
                         </div>
 
                         <div class="field col-12 md:col-6">
-                            <label for="accoutant">Tên kế toán</label>
-                            <input pInputText id="accoutant" type="text"/>
+                            <label for="accountantName">Kế toán</label>
+                            <input pInputText id="accountantName" type="text"
+                                   formControlName="accountantName"
+                            />
+                        </div>
+                        <div class="field col-12 md:col-6">
+                            <label for="accountantPhone">Điện thoại kế toán</label>
+                            <input pInputText type="text" id="accountantPhone"
+                                   formControlName="accountantPhone"/>
                         </div>
                     </div>
                 </div>
                 <div class="card">
                     <h5>Thông tin về thuế</h5>
                     <div class="formgrid grid">
-                        <div class="field col-12 md:col-6">
+                        <div class="field col-12 md:col-3">
                             <label for="taxAccount">Tài khoản ITax</label>
-                            <input pInputText id="taxAccount" type="text"/>
+                            <input pInputText id="taxAccount" type="text"
+                                   (focus)="iTaxAccount()"
+                                   formControlName="taxAccount"
+                            />
                         </div>
-                        <div class="field col-12 md:col-3">
+                        <div class="field col-12 md:col-2">
                             <label for="taxAccountPassword">Mật khẩu ITax</label>
-                            <input pInputText id="taxAccountPassword" type="text"/>
+                            <input pInputText id="taxAccountPassword"
+                                   formControlName="taxAccountPassword" type="text"/>
+                        </div>
+                        <div class="field col-12 md:col-2">
+                            <label for="pinCode">Mã pin CKS</label>
+                            <input pInputText id="pinCode" type="text"
+                                   formControlName="tokenPin"/>
                         </div>
                         <div class="field col-12 md:col-3">
-                            <label for="pinCode">Mã pin CKS</label>
-                            <input pInputText id="pinCode" type="text"/>
+                            <label for="taxInvoice">Tài khoản tra cứu hóa đơn</label>
+                            <input pInputText id="taxInvoice" type="text"
+                                   formControlName="taxInvoiceAccount"
+                            />
+                        </div>
+                        <div class="field col-12 md:col-2">
+                            <label for="taxInvoicePass">Mật khẩu TCHĐ</label>
+                            <input pInputText id="taxInvoicePass" type="text"
+                                   formControlName="taxInvoiceAccountPassword"
+                            />
                         </div>
                         <div class="field col-12 md:col-4">
                             <label for="invoiceProvider">Tổ chức cung cấp hóa đơn điện tử</label>
-                            <input pInputText id="invoiceProvider" type="text"/>
+                            <input pInputText id="invoiceProvider" formControlName="invoiceProvider" type="text"/>
                         </div>
                         <div class="field col-12 md:col-4">
                             <label for="invoiceAccount">Tên đăng nhập</label>
-                            <input pInputText id="invoiceAccount" type="text"/>
+                            <input pInputText id="invoiceAccount" formControlName="invoiceAccount" type="text"/>
                         </div>
                         <div class="field col-12 md:col-4">
                             <label for="invoiceAccountPassword">Mật khẩu</label>
-                            <input pInputText id="invoiceAccountPassword" type="text"/>
+                            <input pInputText id="invoiceAccountPassword" formControlName="invoiceAccountPassword" type="text"/>
                         </div>
                     </div>
                 </div>
@@ -177,14 +318,15 @@
                     <div class="formgrid grid">
                         <div class="field col-12 md:col-12">
                             <label for="description">Ghi chú</label>
-                            <textarea pInputTextarea rows="5" id="description"></textarea>
+                            <textarea pInputTextarea rows="5" id="description"
+                            formControlName="description" ></textarea>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
         <div>
-            <p-toast key="mess" position="bottom-center"></p-toast>
+
         </div>
         <ng-template pTemplate="footer">
             <button pButton pRipple label="Cancel" (click)="closeDialog()" icon="pi pi-times"
@@ -194,3 +336,4 @@
         </ng-template>
     </p-dialog>
 </div>
+<p-toast key="mess" position="bottom-center"></p-toast>

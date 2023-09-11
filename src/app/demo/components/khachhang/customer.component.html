@@ -231,7 +231,7 @@
                                      separator="," [addOnTab]="true" [addOnBlur]="true" [showClear]="true"
                                      [allowDuplicate]="false"
                                      placeholder="name1@email.com, name2@email.com"
-                                     (onBlur)="checkEmail()"/>
+                                     (onBlur)="validateFormEmail()"/>
                             <div
                                 *ngIf="customerForm.get('customerEmails').invalid && (customerForm.get('customerEmails').touched || customerForm.get('customerEmails').dirty)">
                                 <small class="p-error" *ngIf="customerForm.get('customerEmails').errors.invalidEmail">
@@ -298,7 +298,7 @@
                         <div class="field col-12 md:col-2">
                             <label for="taxInvoicePass">Mật khẩu TCHĐ</label>
                             <input pInputText id="taxInvoicePass" type="text"
-                                   formControlName="taxInvoiceAccountPassword"
+                                   formControlName="taxInvoicePassword"
                             />
                         </div>
                         <div class="field col-12 md:col-4">

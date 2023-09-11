@@ -1,15 +1,15 @@
-import {Component, OnInit} from '@angular/core';
-import {CustomerService} from "./customer.service";
-import {Customer, CustomerInput} from "../../api/customer";
-import {CommonService} from "../../../common/common.service";
-import {TableModule} from 'primeng/table';
-import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
-import {MenuItem, MessageService} from "primeng/api";
-import {CustomValidatorService} from "../../../common/custom-validator.service";
-import {error} from "@angular/compiler-cli/src/transformers/util";
-import {map} from "rxjs/operators";
-import {Clipboard} from "@angular/cdk/clipboard";
-import {el} from "@fullcalendar/core/internal-common";
+import { Component, OnInit } from '@angular/core';
+import { CustomerService } from "./customer.service";
+import { Customer, CustomerInput } from "../../api/customer";
+import { CommonService } from "../../../common/common.service";
+import { TableModule } from 'primeng/table';
+import { AbstractControl, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { MenuItem, MessageService } from "primeng/api";
+import { CustomValidatorService } from "../../../common/custom-validator.service";
+import { error } from "@angular/compiler-cli/src/transformers/util";
+import { map } from "rxjs/operators";
+import { Clipboard } from "@angular/cdk/clipboard";
+import { el } from "@fullcalendar/core/internal-common";
 
 @Component({
     selector: 'app-khachhang',
@@ -17,14 +17,13 @@ import {el} from "@fullcalendar/core/internal-common";
     styleUrls: ['./customer.component.scss']
 })
 
-
 export class CustomerComponent implements OnInit {
 
     constructor(private customerService: CustomerService,
-                private commonService: CommonService,
-                private messageService: MessageService,
-                private customValidator: CustomValidatorService,
-                private clipboard: Clipboard) {
+        private commonService: CommonService,
+        private messageService: MessageService,
+        private customValidator: CustomValidatorService,
+        private clipboard: Clipboard) {
     }
 
     public customerList: CustomerInput[];
@@ -57,6 +56,7 @@ export class CustomerComponent implements OnInit {
             label: 'Xóa',
             icon: 'pi pi-trash',
             command: () => {
+                this.deleteCustomer(this.selectedCustomer.id);
             }
         },
     ]
@@ -81,7 +81,7 @@ export class CustomerComponent implements OnInit {
             taxAccountPassword: new FormControl(null),
             tokenPin: new FormControl(null),
             taxInvoiceAccount: new FormControl(null),
-            taxInvoiceAccountPassword: new FormControl(null),
+            taxInvoicePassword: new FormControl(null),
             invoiceProvider: new FormControl(null),
             invoiceAccount: new FormControl(null),
             invoiceAccountPassword: new FormControl(null),
@@ -98,7 +98,7 @@ export class CustomerComponent implements OnInit {
                 .subscribe({
                     next: res => {
                         if (res === true && this.isUpdate === false) {
-                            this.customerForm.get('taxCode').setErrors({dupTaxCode: "Mã số thuế đã tồn tại"})
+                            this.customerForm.get('taxCode').setErrors({ dupTaxCode: "Mã số thuế đã tồn tại" })
                         } else {
                             if (this.customerForm.get('taxCode').hasError('dupTaxCode')) {
                                 delete this.customerForm.get('taxCode').errors['dupTaxCode'];
@@ -109,13 +109,13 @@ export class CustomerComponent implements OnInit {
                 });
     }
 
-    checkEmail() {
+    validateFormEmail() {
         let emails = this.customerForm.get('customerEmails').value;
         let pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (emails !== null) {
             emails.forEach((email: string) => {
                 if (!pattern.test(email)) {
-                    this.customerForm.get('customerEmails').setErrors({invalidEmail: "Email không hợp lệ"});
+                    this.customerForm.get('customerEmails').setErrors({ invalidEmail: "Email không hợp lệ" });
                 } else {
                     if (this.customerForm.get('customerEmails').hasError('invalidEmail')) {
                         delete this.customerForm.get('customerEmails').errors['invalidEmail'];
@@ -162,7 +162,7 @@ export class CustomerComponent implements OnInit {
                 life: 5000
             });
         } else {
-            let inputCustomer: CustomerInput = {...this.customerForm.value}
+            let inputCustomer: CustomerInput = { ...this.customerForm.value }
             if (this.isUpdate === false) {
                 this.createCustomer(inputCustomer);
             } else {
@@ -203,7 +203,7 @@ export class CustomerComponent implements OnInit {
         }
     }
 
-    checkedAddress() {
+    checkedAddress(): void {
         this.address2 = !this.address2;
         if (this.address2 === true) {
             this.customerForm.get('address2').setValue(this.customerForm.get('address').value);
@@ -222,7 +222,7 @@ export class CustomerComponent implements OnInit {
     }
 
     selectCustomer(customer: any): void {
-        this.selectedCustomer = {...customer};
+        this.selectedCustomer = { ...customer };
     }
 
     viewCustomer(customer: any): void {
@@ -272,7 +272,7 @@ export class CustomerComponent implements OnInit {
 
     updateCustomer(customer: CustomerInput): void {
         //TODO call update customer API
-        console.log({update: customer})
+        console.log({ update: customer })
         this.customerService.update(customer).subscribe(
             {
                 next: res => {
@@ -297,6 +297,15 @@ export class CustomerComponent implements OnInit {
                 }
             }
         )
+    }
+
+    deleteCustomer(id: string) {
+        // TODO: call delete API
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Thông báo',
+            detail: `Đã xóa thành công: ${id}`
+        })
     }
 
 }

@@ -1,0 +1,35 @@
+<div class="card">
+    <p-table [value]="invoiceList"
+             [(selection)]="currentInvoice"
+             dataKey="id"
+             [tableStyle]="{'min-width': '50rem'}">
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 4rem">
+                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                </th>
+                <th>Số hóa đơn</th>
+                <th>Ngày hóa đơn</th>
+                <th>Mã số thuế</th>
+                <th>Tên người bán</th>
+                <th>Giá chưa thuế</th>
+                <th>Tiền thuế</th>
+                <th>Giá sau thuế</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-invoice>
+            <tr>
+                <td>
+                    <p-tableCheckbox [value]="invoice"></p-tableCheckbox>
+                </td>
+                <td>{{invoice.invoiceNumber}}</td>
+                <td>{{invoice.issueDate}}</td>
+                <td>{{invoice.sellerTaxCode}}</td>
+                <td>{{invoice.sellerName}}</td>
+                <td>{{invoice.totalAmount}}</td>
+                <td>{{invoice.taxAmount}}</td>
+                <td>{{invoice.totalAmountAfterTax}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

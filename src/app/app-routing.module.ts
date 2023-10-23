@@ -5,6 +5,7 @@ import {AppLayoutComponent} from "./layout/app.layout.component";
 import {CustomerComponent} from "./demo/components/khachhang/customer.component";
 import {ReadInvoiceComponent} from "./demo/components/read-invoice/read-invoice.component";
 import {AuthGuard} from "./demo/components/auth/auth-guard.service";
+import {BangkeComponent} from "./demo/components/bangke/bangke.component";
 
 @NgModule({
     imports: [
@@ -25,6 +26,10 @@ import {AuthGuard} from "./demo/components/auth/auth-guard.service";
                     {
                         path: 'hoa-don',
                         component: ReadInvoiceComponent
+                    },
+                    {
+                        path: 'bang-ke',
+                        component: BangkeComponent
                     },
                     {
                         path: 'uikit',

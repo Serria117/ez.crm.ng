@@ -19,10 +19,12 @@ import {FileUploadModule} from "primeng/fileupload";
 import {ToastModule} from "primeng/toast";
 import {TableModule} from "primeng/table";
 import {AuthInterceptorProviders} from "./helper/auth.interceptor";
+import { TaxAuthorityComponent } from './demo/components/TaxAuthority/tax-authority.component';
+import { BangkeComponent } from './demo/components/bangke/bangke.component';
 
 @NgModule({
     declarations: [
-        AppComponent, NotfoundComponent, ReadInvoiceComponent
+        AppComponent, NotfoundComponent, ReadInvoiceComponent, TaxAuthorityComponent, BangkeComponent
     ],
     imports: [
         AppRoutingModule, CustomerModule,

@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { CustomerService } from "./customer.service";
-import { Customer, CustomerInput } from "../../api/customer";
-import { CommonService } from "../../../common/common.service";
-import { TableModule } from 'primeng/table';
-import { AbstractControl, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { MenuItem, MessageService } from "primeng/api";
-import { CustomValidatorService } from "../../../common/custom-validator.service";
-import { error } from "@angular/compiler-cli/src/transformers/util";
-import { map } from "rxjs/operators";
-import { Clipboard } from "@angular/cdk/clipboard";
-import { el } from "@fullcalendar/core/internal-common";
+import {Component, OnInit} from '@angular/core';
+import {CustomerService} from "./customer.service";
+import {Customer, CustomerInput} from "../../api/customer";
+import {CommonService} from "../../../common/common.service";
+import {TableModule} from 'primeng/table';
+import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
+import {MenuItem, MessageService} from "primeng/api";
+import {CustomValidatorService} from "../../../common/custom-validator.service";
+import {error} from "@angular/compiler-cli/src/transformers/util";
+import {map} from "rxjs/operators";
+import {Clipboard} from "@angular/cdk/clipboard";
+import {el} from "@fullcalendar/core/internal-common";
+import {TaxAuthorityService} from "../TaxAuthority/tax-authority.service";
+import {TaxAuthority} from "../../api/TaxAuthority";
 
 @Component({
     selector: 'app-khachhang',
@@ -20,17 +22,23 @@ import { el } from "@fullcalendar/core/internal-common";
 export class CustomerComponent implements OnInit {
 
     constructor(private customerService: CustomerService,
-        private commonService: CommonService,
-        private messageService: MessageService,
-        private customValidator: CustomValidatorService,
-        private clipboard: Clipboard) {
+                private commonService: CommonService,
+                private messageService: MessageService,
+                private customValidator: CustomValidatorService,
+                private taxAuthorityService: TaxAuthorityService,
+                private clipboard: Clipboard) {
     }
 
-    public customerList: CustomerInput[];
+    public customerList: CustomerInput[] = [];
     public selectedCustomer: CustomerInput = {};
     country: any[];
     page: number = 1;
     size: number = 100;
+
+    taxAuthorityLvl1: TaxAuthority[] = null;
+    taxAuthorityLvl2: TaxAuthority[] = null;
+    selectedTaxLvl1: TaxAuthority = null;
+    selectedTaxLvl2: TaxAuthority = null;
 
     loading: boolean = true;
     isUpdate: boolean = false;
@@ -64,6 +72,7 @@ export class CustomerComponent implements OnInit {
     ngOnInit(): void {
         this.initForm();
         this.loadCustomer(this.page, this.size);
+        this.getAllParentTaxAuthority(1, 100);
     }
 
     initForm(): void {
@@ -80,25 +89,41 @@ export class CustomerComponent implements OnInit {
             taxAccount: new FormControl(null),
             taxAccountPassword: new FormControl(null),
             tokenPin: new FormControl(null),
-            taxInvoiceAccount: new FormControl(null),
             taxInvoicePassword: new FormControl(null),
             invoiceProvider: new FormControl(null),
             invoiceAccount: new FormControl(null),
             invoiceAccountPassword: new FormControl(null),
             managerName: new FormControl(null, [Validators.required]),
             accountantName: new FormControl(null),
-            description: new FormControl(null, [Validators.maxLength(2000)])
+            description: new FormControl(null, [Validators.maxLength(2000)]),
+            taxAuthorityId: new FormControl(null),
+            parentTaxAuthorityId: new FormControl(null)
         });
+    }
+
+    getCustomerInfo(taxCode: string): void {
+        if(taxCode !== null) {
+            this.customerService.getInfo(taxCode).subscribe({
+                next: res => {
+                    if(res.result.items !== null) {
+                        this.customerForm.get('fullName').setValue(res.result.items.name);
+                        this.customerForm.get('address').setValue(res.result.items.address);
+                    }
+                }
+            })
+
+        }
     }
 
     checkDuplicateTaxCode(): void {
         let taxCode = this.customerForm.get('taxCode').value;
-        if (this.commonService.validateTaxCode(taxCode))
+        if (this.commonService.validateTaxCode(taxCode)) {
+            this.getCustomerInfo(taxCode);
             this.customerService.checkDuplicate(this.customerForm.get('taxCode').value)
                 .subscribe({
                     next: res => {
-                        if (res === true && this.isUpdate === false) {
-                            this.customerForm.get('taxCode').setErrors({ dupTaxCode: "Mã số thuế đã tồn tại" })
+                        if (res.result === true && this.isUpdate === false) {
+                            this.customerForm.get('taxCode').setErrors({dupTaxCode: "Mã số thuế đã tồn tại"})
                         } else {
                             if (this.customerForm.get('taxCode').hasError('dupTaxCode')) {
                                 delete this.customerForm.get('taxCode').errors['dupTaxCode'];
@@ -107,6 +132,7 @@ export class CustomerComponent implements OnInit {
                         }
                     }
                 });
+        }
     }
 
     validateFormEmail() {
@@ -115,7 +141,7 @@ export class CustomerComponent implements OnInit {
         if (emails !== null) {
             emails.forEach((email: string) => {
                 if (!pattern.test(email)) {
-                    this.customerForm.get('customerEmails').setErrors({ invalidEmail: "Email không hợp lệ" });
+                    this.customerForm.get('customerEmails').setErrors({invalidEmail: "Email không hợp lệ"});
                 } else {
                     if (this.customerForm.get('customerEmails').hasError('invalidEmail')) {
                         delete this.customerForm.get('customerEmails').errors['invalidEmail'];
@@ -162,7 +188,7 @@ export class CustomerComponent implements OnInit {
                 life: 5000
             });
         } else {
-            let inputCustomer: CustomerInput = { ...this.customerForm.value }
+            let inputCustomer: CustomerInput = {...this.customerForm.value}
             if (this.isUpdate === false) {
                 this.createCustomer(inputCustomer);
             } else {
@@ -179,7 +205,9 @@ export class CustomerComponent implements OnInit {
     }
 
     updateDialog(): void {
+        this.getTaxAuthorityByParent(1,100);
         this.customerForm.patchValue(this.selectedCustomer);
+        console.log(this.customerForm.value)
         this.inputDialogHeader = `Cập nhật thông tin khách hàng: ${this.selectedCustomer.taxCode || ''}`;
         this.isUpdate = true;
         this.inputDialog = true;
@@ -222,7 +250,7 @@ export class CustomerComponent implements OnInit {
     }
 
     selectCustomer(customer: any): void {
-        this.selectedCustomer = { ...customer };
+        this.selectedCustomer = {...customer};
     }
 
     viewCustomer(customer: any): void {
@@ -271,8 +299,7 @@ export class CustomerComponent implements OnInit {
     }
 
     updateCustomer(customer: CustomerInput): void {
-        //TODO call update customer API
-        console.log({ update: customer })
+        console.log({update: customer})
         this.customerService.update(customer).subscribe(
             {
                 next: res => {
@@ -306,6 +333,50 @@ export class CustomerComponent implements OnInit {
             summary: 'Thông báo',
             detail: `Đã xóa thành công: ${id}`
         })
+    }
+
+    getAllParentTaxAuthority(page: number, size: number): any {
+        return this.taxAuthorityService.getAll(page, size)
+            .subscribe({
+                next: value => {
+                    if (value.success === true) {
+                        this.taxAuthorityLvl1 = value.result.items;
+                    } else {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Lỗi',
+                            detail: 'Có lỗi xảy ra!'
+                        })
+                    }
+                },
+                error: () => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Lỗi',
+                        detail: 'Không thể tải danh sách cơ quan thuế'
+                    })
+                }
+            })
+    }
+
+    getTaxAuthorityByParent(page: number, size: number): any {
+        let taxAuthId = this.customerForm.get('parentTaxAuthorityId').value;
+        if (taxAuthId !== null) {
+            return this.taxAuthorityService.getByParent(taxAuthId, page, size)
+                .subscribe({
+                    next: value => {
+                        this.taxAuthorityLvl2 = value.result.items;
+                        console.log(this.taxAuthorityLvl2)
+                    },
+                    error: (err) => {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Lỗi',
+                            detail: 'Không thể tải danh sách cơ quan thuế'
+                        })
+                    }
+                })
+        }
     }
 
 }

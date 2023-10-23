@@ -47,15 +47,21 @@ export class CustomerService {
     }
 
     checkDuplicate(taxCode: string): Observable<any> {
-        return this.httpClient.post(this.BASE_URL + API.Customer.check,
-            null,
+        return this.httpClient.get(this.BASE_URL + API.Customer.check,
+            {params: {
+                taxCode: taxCode
+                }});
+    }
+
+    validateTaxCode(taxCode: string): Observable<any> {
+        return this.httpClient.get(this.BASE_URL + API.Customer.validate,
             {
                 params: {taxCode: taxCode}
             });
     }
 
-    validateTaxCode(taxCode: string): Observable<any> {
-        return this.httpClient.get(this.BASE_URL + API.Customer.validate,
+    getInfo(taxCode: string): Observable<any> {
+        return this.httpClient.get(this.BASE_URL + API.Customer.getInfo,
             {
                 params: {taxCode: taxCode}
             });

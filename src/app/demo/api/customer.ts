@@ -58,4 +58,6 @@ export interface CustomerInput {
     address2?: string | null;
     customerEmails?: string[] | null;
     description?: string;
+    taxAuthorityId?: number;
+    parentTaxAuthorityId?: number
 }

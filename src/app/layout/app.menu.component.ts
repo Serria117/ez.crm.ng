@@ -21,10 +21,21 @@ export class AppMenuComponent implements OnInit {
                     {label: 'Khách hàng', icon: 'pi pi-fw pi-home', routerLink: ['/khach-hang']}
                 ]
             },
+
             {
                 label: 'Công cụ',
                 items: [
-                    {label: 'Đọc hóa đơn XML', icon: 'pi pi-fw pi-id-card', routerLink: ['/hoa-don']}
+                    {
+                        label: 'Nhập bảng kê',
+                        icon: 'pi pi-fw pi-list',
+                        routerLink: ['/bang-ke']
+
+                    },
+                    {
+                        label: 'Đọc hóa đơn XML',
+                        icon: 'pi pi-fw pi-id-card',
+                        routerLink: ['/hoa-don']
+                    }
                 ]
             },
             /*{

@@ -1,5 +1,5 @@
 <p-toast></p-toast>
-<div >
+<div>
     <p-table [value]="customerList"
              styleClass="p-datatable-gridlines p-datatable-striped"
              [tableStyle]="{ 'min-width': '50rem' }"
@@ -11,7 +11,7 @@
 
                 <h5 class="m-0">Danh sách khách hàng</h5>
                 <div class="flex md:align-items-center md:justify-content-between">
-                    <button pButton pRipple (click)="addNewDialog()"
+                    <button pButton pRipple (click)="addNewDialog();getAllParentTaxAuthority(1, 100)"
                             label="Thêm khách hàng"
                             icon="pi pi-plus"
                             class="p-button-success mr-2">
@@ -272,6 +272,25 @@
                 <div class="card">
                     <h5>Thông tin về thuế</h5>
                     <div class="formgrid grid">
+                        <div class="field col-12 md:col-6">
+                            <label>Cơ quan thuế cấp tỉnh</label>
+                            <p-dropdown [options]="taxAuthorityLvl1"
+                                        placeholder="Lựa chọn..."
+                                        formControlName="parentTaxAuthorityId"
+                                        (onChange)="getTaxAuthorityByParent(1,100)"
+                                        optionLabel="fullName"
+                                        optionValue="id">
+                            </p-dropdown>
+                        </div>
+                        <div class="field col-12 md:col-6">
+                            <label>Cơ quan thuế quản lý trực tiếp</label>
+                            <p-dropdown [options]="taxAuthorityLvl2"
+                                        placeholder="Lựa chọn..."
+                                        formControlName="taxAuthorityId"
+                                        optionLabel="fullName"
+                                        optionValue="id">
+                            </p-dropdown>
+                        </div>
                         <div class="field col-12 md:col-3">
                             <label for="taxAccount">Tài khoản ITax</label>
                             <input pInputText id="taxAccount" type="text"
@@ -279,27 +298,21 @@
                                    formControlName="taxAccount"
                             />
                         </div>
-                        <div class="field col-12 md:col-2">
+                        <div class="field col-12 md:col-3">
                             <label for="taxAccountPassword">Mật khẩu ITax</label>
                             <input pInputText id="taxAccountPassword"
                                    formControlName="taxAccountPassword" type="text"/>
                         </div>
-                        <div class="field col-12 md:col-2">
-                            <label for="pinCode">Mã pin CKS</label>
-                            <input pInputText id="pinCode" type="text"
-                                   formControlName="tokenPin"/>
-                        </div>
                         <div class="field col-12 md:col-3">
-                            <label for="taxInvoice">Tài khoản tra cứu hóa đơn</label>
-                            <input pInputText id="taxInvoice" type="text"
-                                   formControlName="taxInvoiceAccount"
-                            />
-                        </div>
-                        <div class="field col-12 md:col-2">
-                            <label for="taxInvoicePass">Mật khẩu TCHĐ</label>
+                            <label for="taxInvoicePass">Mật khẩu tra cứu HĐ</label>
                             <input pInputText id="taxInvoicePass" type="text"
                                    formControlName="taxInvoicePassword"
                             />
+                        </div>
+                        <div class="field col-12 md:col-3">
+                            <label for="pinCode">Mã pin CKS</label>
+                            <input pInputText id="pinCode" type="text"
+                                   formControlName="tokenPin"/>
                         </div>
                         <div class="field col-12 md:col-4">
                             <label for="invoiceProvider">Tổ chức cung cấp hóa đơn điện tử</label>

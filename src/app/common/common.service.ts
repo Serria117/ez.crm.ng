@@ -8,6 +8,8 @@ import {an} from "@fullcalendar/core/internal-common";
 })
 export class CommonService {
 
+    currentCustomer: any;
+
     constructor(private http: HttpClient) {
     }
 
@@ -73,6 +75,10 @@ export class CommonService {
         });
     }
 
+    replaceSpaceWithDash(str: string): string {
+        return this.trimInput(str).replace(" ", "-");
+    }
+
     getFormValidationErrors(form: FormGroup) {
 
         const result = [];
@@ -92,4 +98,16 @@ export class CommonService {
 
         return result;
     }
+
+    saveToStorage(key: string, value: string): void {
+        if (localStorage.getItem(key) !== null) localStorage.removeItem(key);
+        localStorage.setItem(key, value);
+    }
+
+    removeFromStorage(key: string): void {
+        if (localStorage.getItem(key) !== null) {
+            localStorage.removeItem(key);
+        }
+    }
+
 }

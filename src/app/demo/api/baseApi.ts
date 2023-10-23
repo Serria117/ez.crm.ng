@@ -1,5 +1,5 @@
 export const API = {
-    BASE : `https://localhost:44311`,
+    BASE : `http://localhost:44311` || `http://14.225.19.135:44311`,
 
     AUTH: {
         login: `/api/TokenAuth/Authenticate`
@@ -12,6 +12,18 @@ export const API = {
         findById: `/api/services/app/Customer/GetCustomerByTaxCode`,
         search: `/api/services/app/Customer/Search`,
         check: `/api/services/app/Customer/CheckTaxCodeDuplication`,
-        validate: `customer/validate-taxCode`
+        validate: `customer/validate-taxCode`,
+        getInfo: `/api/services/app/Customer/GetInfoByTaxCode`
+    },
+    TaxAuthority: {
+        getAll: `/api/services/app/TaxAuthority/GetAll`,
+        getByParent: `/api/services/app/TaxAuthority/GetAllByParent`,
+        getById: `/api/services/app/TaxAuthority/GetById`
+    },
+    BangKe: {
+        create: `/api/services/app/Invoice/CreateInvoice`,
+        getAllByCustomer: `/api/services/app/Invoice/GetInvoiceList`,
+        deleteInvoice: `/api/services/app/Invoice/DeleteInvoice`
     }
+
 }

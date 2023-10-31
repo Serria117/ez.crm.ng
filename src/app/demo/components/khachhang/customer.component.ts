@@ -255,6 +255,7 @@ export class CustomerComponent implements OnInit {
 
     viewCustomer(customer: any): void {
         this.selectCustomer(customer);
+        console.log(customer);
         this.detailDialog = true;
         //TODO call dialog to view customer (no change data)
     }

@@ -50,7 +50,7 @@
                 <td>
                     <div class="flex align-items-center gap-2 flex-wrap"
                          *ngFor="let e of c.customerEmails">
-                        <p-chip [label]="e" icon="pi pi-envelope" class="md:m-1">
+                        <p-chip *ngIf="e !== ''" [label]="e" icon="pi pi-envelope" class="md:m-1">
                         </p-chip>
                     </div>
                 </td>
@@ -67,7 +67,7 @@
     </p-table>
 
     <p-dialog [(visible)]="detailDialog"
-              [style]="{width: '1000px'}"
+              [style]="{width: '1200px'}"
               [header]="selectedCustomer.fullName +' - ' + selectedCustomer.taxCode"
               maximizable="true"
               [modal]="true" class="p-fluid">
@@ -102,7 +102,7 @@
                 <div class="col-12 md:col-2 font-medium text-blue-500">Email:</div>
                 <div class="col-12 md:col-10 font-medium">
                     <span *ngFor="let e of selectedCustomer.customerEmails">
-                        <p-chip [label]="e" icon="pi pi-envelope" class="md:m-1"></p-chip>
+                        <p-chip *ngIf="e !== ''" [label]="e" icon="pi pi-envelope" class="md:m-1"></p-chip>
                     </span>
                 </div>
                 <div class="col-12">
@@ -130,7 +130,12 @@
                     <!--                    <p-chip icon="pi pi-key" [label]="selectedCustomer.tokenPin"></p-chip>-->
                     {{selectedCustomer.tokenPin}}
                 </div>
-
+                <div class="col-12 md:col-2 font-medium text-blue-500">Pass tra cứu HĐ:</div>
+                <div #invoice (click)="copyText(invoice.innerText)"
+                     class="col-12 md:col-2 font-medium cursor-pointer">
+                    <!--                    <p-chip icon="pi pi-key" [label]="selectedCustomer.tokenPin"></p-chip>-->
+                    {{selectedCustomer.taxInvoicePassword}}
+                </div>
             </div>
         </div>
     </p-dialog>

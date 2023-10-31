@@ -1,5 +1,5 @@
 export const API = {
-    BASE : `http://localhost:44311` || `http://14.225.19.135:44311`,
+    BASE : `http://14.225.19.135:44311`,
 
     AUTH: {
         login: `/api/TokenAuth/Authenticate`

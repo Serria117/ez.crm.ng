@@ -20,9 +20,10 @@
                     <span class="block mt-2 md:mt-0 p-input-icon-left">
                     <i class="pi pi-search"></i>
                     <input pInputText type="text" #searchInput
+                           id="searchInput"
                            placeholder="Search..." class="w-full sm:w-auto"
                            [(ngModel)]="keyword"
-                           (keyup)="searchCustomer()"
+
 
                     />
                 </span>
@@ -64,7 +65,12 @@
             <div class="flex align-items-center justify-content-center">
 
                 <p-paginator
-                    [rowsPerPageOptions]="[10, 20, 30]">
+                    [first]="page"
+                    [rows]="size"
+                    [totalRecords]="totalRecord"
+                    [rowsPerPageOptions]="[10, 20, 30]"
+                    (onPageChange)="onPageChange($event)"
+                >
                 </p-paginator>
             </div>
         </ng-template>

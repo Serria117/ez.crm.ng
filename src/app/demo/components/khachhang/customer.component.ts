@@ -1,8 +1,8 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {CustomerService} from "./customer.service";
 import {Customer, CustomerInput} from "../../api/customer";
 import {CommonService} from "../../../common/common.service";
-import {TableModule} from 'primeng/table';
+import {TableModule, TablePageEvent} from 'primeng/table';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {MenuItem, MessageService} from "primeng/api";
 import {CustomValidatorService} from "../../../common/custom-validator.service";
@@ -11,7 +11,8 @@ import {debounceTime, distinctUntilChanged, map, switchMap} from "rxjs/operators
 import {Clipboard} from "@angular/cdk/clipboard";
 import {TaxAuthorityService} from "../TaxAuthority/tax-authority.service";
 import {TaxAuthority} from "../../api/TaxAuthority";
-import {filter, fromEvent, Subject} from "rxjs";
+import {filter, fromEvent, Observable, Subject} from "rxjs";
+import {PaginatorState} from "primeng/paginator";
 
 @Component({
     selector: 'app-khachhang',
@@ -19,7 +20,7 @@ import {filter, fromEvent, Subject} from "rxjs";
     styleUrls: ['./customer.component.scss']
 })
 
-export class CustomerComponent implements OnInit {
+export class CustomerComponent implements OnInit, AfterViewInit {
 
     constructor(private customerService: CustomerService,
                 private commonService: CommonService,
@@ -36,6 +37,7 @@ export class CustomerComponent implements OnInit {
     country: any[];
     page: number = 1;
     size: number = 100;
+    totalRecord: number;
     keyword: string = null;
 
     taxAuthorityLvl1: TaxAuthority[] = null;
@@ -79,6 +81,28 @@ export class CustomerComponent implements OnInit {
         this.initForm();
         this.loadCustomer(this.page, this.size);
         this.getAllParentTaxAuthority(1, 100);
+
+    }
+
+    ngAfterViewInit() {
+        let seachText = document.getElementById('searchInput');
+        fromEvent(seachText, 'keyup').pipe(
+            map((event: any ) => event.target.value),
+            //filter(val => val.length > 2),
+            debounceTime(1000),
+            distinctUntilChanged(),
+            switchMap(query => this.searchCustomer(query))
+        ).subscribe({
+            next: res => {
+                if (res.result !== undefined) {
+                    this.customerList = res.result.items;
+                    this.totalRecord = res.result.totalCount;
+                }
+            },
+            error: err => {
+                console.log(err);
+            }
+        })
     }
 
     initForm(): void {
@@ -119,6 +143,11 @@ export class CustomerComponent implements OnInit {
             })
 
         }
+    }
+
+    onPageChange(event: PaginatorState){
+        this.page = event.first;
+        this.size = event.rows
     }
 
     checkDuplicateTaxCode(): void {
@@ -271,6 +300,7 @@ export class CustomerComponent implements OnInit {
             next: res => {
                 if (res.result !== undefined) {
                     this.customerList = res.result.items;
+                    this.totalRecord = res.result.totalCount;
                 }
             },
             error: err => {
@@ -279,24 +309,13 @@ export class CustomerComponent implements OnInit {
         })
     }
 
-    searchCustomer(): void {
-        if (this.keyword !== null && this.keyword.length > 2) {
-
-            this.customerService.search(this.keyword, this.page, this.size).subscribe(
-                {
-                    next: res => {
-                        if (res.result !== undefined) {
-                            this.customerList = res.result.items;
-                        }
-                    },
-                    error: err => {
-                        console.log(err);
-                    }
-                }
-            )
-        } else if (this.keyword === null || this.keyword === '') {
-            this.loadCustomer(this.page, this.size);
+    searchCustomer(query: string): Observable<any> {
+        if (query !== null && query.length > 2) {
+            return this.customerService.search(query, this.page, this.size);
+        } else if (query === null || query === '') {
+            return this.customerService.getAll(this.page, this.size)
         }
+        return null;
     }
 
     createCustomer(customer: CustomerInput): void {
@@ -409,4 +428,5 @@ export class CustomerComponent implements OnInit {
         }
     }
 
+    protected readonly event = event;
 }

@@ -88,7 +88,7 @@ export class CustomerComponent implements OnInit, AfterViewInit {
         let seachText = document.getElementById('searchInput');
         fromEvent(seachText, 'keyup').pipe(
             map((event: any ) => event.target.value),
-            filter(val => val.length > 2),
+            filter(val => val.length > 2 || val === ''),
             debounceTime(500),
             distinctUntilChanged(),
             switchMap(query => this.searchCustomer(query))

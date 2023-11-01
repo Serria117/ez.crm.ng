@@ -205,8 +205,8 @@ export class CustomerComponent implements OnInit {
     }
 
     updateDialog(): void {
-        this.getTaxAuthorityByParent(1,100);
         this.customerForm.patchValue(this.selectedCustomer);
+        this.getTaxAuthorityByParent(1,100);
         console.log(this.customerForm.value)
         this.inputDialogHeader = `Cập nhật thông tin khách hàng: ${this.selectedCustomer.taxCode || ''}`;
         this.isUpdate = true;
@@ -362,6 +362,7 @@ export class CustomerComponent implements OnInit {
 
     getTaxAuthorityByParent(page: number, size: number): any {
         let taxAuthId = this.customerForm.get('parentTaxAuthorityId').value;
+        console.log({"co quan thue" : taxAuthId})
         if (taxAuthId !== null) {
             return this.taxAuthorityService.getByParent(taxAuthId, page, size)
                 .subscribe({

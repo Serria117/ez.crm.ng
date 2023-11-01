@@ -11,15 +11,19 @@
 
                 <h5 class="m-0">Danh sách khách hàng</h5>
                 <div class="flex md:align-items-center md:justify-content-between">
-                    <button pButton pRipple (click)="addNewDialog();getAllParentTaxAuthority(1, 100)"
+                    <button pButton pRipple
+                            (click)="addNewDialog();getAllParentTaxAuthority(1, 100)"
                             label="Thêm khách hàng"
                             icon="pi pi-plus"
                             class="p-button-success mr-2">
                     </button>
                     <span class="block mt-2 md:mt-0 p-input-icon-left">
                     <i class="pi pi-search"></i>
-                    <input pInputText type="text"
+                    <input pInputText type="text" #searchInput
                            placeholder="Search..." class="w-full sm:w-auto"
+                           [(ngModel)]="keyword"
+                           (keyup)="searchCustomer()"
+
                     />
                 </span>
                 </div>

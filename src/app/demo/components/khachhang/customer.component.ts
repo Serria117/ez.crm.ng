@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {CustomerService} from "./customer.service";
 import {Customer, CustomerInput} from "../../api/customer";
 import {CommonService} from "../../../common/common.service";
@@ -7,11 +7,11 @@ import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '
 import {MenuItem, MessageService} from "primeng/api";
 import {CustomValidatorService} from "../../../common/custom-validator.service";
 import {error} from "@angular/compiler-cli/src/transformers/util";
-import {map} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged, map, switchMap} from "rxjs/operators";
 import {Clipboard} from "@angular/cdk/clipboard";
-import {el} from "@fullcalendar/core/internal-common";
 import {TaxAuthorityService} from "../TaxAuthority/tax-authority.service";
 import {TaxAuthority} from "../../api/TaxAuthority";
+import {filter, fromEvent, Subject} from "rxjs";
 
 @Component({
     selector: 'app-khachhang',
@@ -27,13 +27,16 @@ export class CustomerComponent implements OnInit {
                 private customValidator: CustomValidatorService,
                 private taxAuthorityService: TaxAuthorityService,
                 private clipboard: Clipboard) {
+
     }
+    @ViewChild('searchInput',{ static: true, read: ElementRef }) searchInput!: ElementRef
 
     public customerList: CustomerInput[] = [];
     public selectedCustomer: CustomerInput = {};
     country: any[];
     page: number = 1;
     size: number = 100;
+    keyword: string = null;
 
     taxAuthorityLvl1: TaxAuthority[] = null;
     taxAuthorityLvl2: TaxAuthority[] = null;
@@ -50,7 +53,10 @@ export class CustomerComponent implements OnInit {
     taxCodeReGex: RegExp = /^[0-9-]+$/;
     address2: boolean = false;
 
+
     customerForm: FormGroup;
+
+    searchUpdate = new Subject<string>
 
     detailButton: MenuItem[] = [
         {
@@ -102,10 +108,10 @@ export class CustomerComponent implements OnInit {
     }
 
     getCustomerInfo(taxCode: string): void {
-        if(taxCode !== null) {
+        if (taxCode !== null) {
             this.customerService.getInfo(taxCode).subscribe({
                 next: res => {
-                    if(res.result.items !== null) {
+                    if (res.result.items !== null) {
                         this.customerForm.get('fullName').setValue(res.result.items.name);
                         this.customerForm.get('address').setValue(res.result.items.address);
                     }
@@ -206,9 +212,9 @@ export class CustomerComponent implements OnInit {
 
     updateDialog(): void {
         this.customerForm.patchValue(this.selectedCustomer);
-        this.getTaxAuthorityByParent(1,100);
+        this.getTaxAuthorityByParent(1, 100);
         console.log(this.customerForm.value)
-        this.inputDialogHeader = `Cập nhật thông tin khách hàng: ${this.selectedCustomer.taxCode || ''}`;
+        this.inputDialogHeader = `Cập nhật thông tin khách hàng: ${this.selectedCustomer.fullName || ''}`;
         this.isUpdate = true;
         this.inputDialog = true;
     }
@@ -273,30 +279,52 @@ export class CustomerComponent implements OnInit {
         })
     }
 
-    createCustomer(customer: CustomerInput): void {
-        this.customerService.create(customer).subscribe({
-            next: res => {
-                if (res) {
-                    console.log(res)
-                    this.messageService.add({
-                        severity: 'info',
-                        summary: 'Thông báo',
-                        detail: `Tạo mới thành công khách hàng: ${customer.fullName} - ${customer.taxCode}`,
-                        life: 5000
-                    });
-                    this.isSucceed = true;
-                    this.loadCustomer(this.page, this.size);
-                    this.closeDialog();
+    searchCustomer(): void {
+        if (this.keyword !== null && this.keyword.length > 2) {
+
+            this.customerService.search(this.keyword, this.page, this.size).subscribe(
+                {
+                    next: res => {
+                        if (res.result !== undefined) {
+                            this.customerList = res.result.items;
+                        }
+                    },
+                    error: err => {
+                        console.log(err);
+                    }
                 }
-            },
-            error: () => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Cảnh báo',
-                    detail: 'Có lỗi xảy ra, vui lòng kiểm tra lại các trường thông tin.'
-                })
-            }
-        });
+            )
+        } else if (this.keyword === null || this.keyword === '') {
+            this.loadCustomer(this.page, this.size);
+        }
+    }
+
+    createCustomer(customer: CustomerInput): void {
+        this.customerService.create(customer)
+            .pipe(debounceTime(1000), distinctUntilChanged())
+            .subscribe({
+                next: res => {
+                    if (res) {
+                        console.log(res)
+                        this.messageService.add({
+                            severity: 'info',
+                            summary: 'Thông báo',
+                            detail: `Tạo mới thành công khách hàng: ${customer.fullName} - ${customer.taxCode}`,
+                            life: 5000
+                        });
+                        this.isSucceed = true;
+                        this.loadCustomer(this.page, this.size);
+                        this.closeDialog();
+                    }
+                },
+                error: () => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Cảnh báo',
+                        detail: 'Có lỗi xảy ra, vui lòng kiểm tra lại các trường thông tin.'
+                    })
+                }
+            });
     }
 
     updateCustomer(customer: CustomerInput): void {
@@ -362,7 +390,7 @@ export class CustomerComponent implements OnInit {
 
     getTaxAuthorityByParent(page: number, size: number): any {
         let taxAuthId = this.customerForm.get('parentTaxAuthorityId').value;
-        console.log({"co quan thue" : taxAuthId})
+        console.log({"co quan thue": taxAuthId})
         if (taxAuthId !== null) {
             return this.taxAuthorityService.getByParent(taxAuthId, page, size)
                 .subscribe({
